@@ -1,5 +1,4 @@
 #include "Uno.h"
-//Probando GitHub
 Uno::Uno()
 {
 	this->totalCards = 108;
@@ -87,7 +86,7 @@ void Uno::PrintDeck(int pIDplayer, Card CardinCenter)
 	
 }
 
-void Uno::PlayUno()
+void Uno::PlayUno1vs1()
 {
 	int points[2] = {0};
 	int currentPositionInVecDiscarded = 0;
@@ -96,14 +95,14 @@ void Uno::PlayUno()
 	Card auxiliarCard;
 	
 
-	while (stillFindingWinner(points)) 
-	{
+	//while (stillFindingWinner(points)) 
+	//{
 		ShuffleDeck();
 		FillPlayersDecks();
 		putCardOnCenter(14, &auxiliarCard, currentPositionInVecDiscarded);
 		currentPositionInVecDiscarded++;
 
-		while (playerHasCards(0) || playerHasCards(1)) 
+		while (playerHasCards(0) && playerHasCards(1)) 
 		{	
 				if(turnOfPlayer == 0){
 					selectedCard = SelectPlayerCard(turnOfPlayer, auxiliarCard, currentPositionInVecDiscarded);
@@ -128,8 +127,12 @@ void Uno::PlayUno()
 					turnOfPlayer--;
 				}
 
+
 		}
-	}
+	//}
+	system("cls");
+	std::cout << "Un jugador ha ganado";
+	system("pause");
 
 }
 
@@ -323,6 +326,7 @@ void Uno::DoSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositi
 		}
 	}
 }
+
 void Uno::changeColorCard(Card* CardinCenter)
 {
 	int color = 0;
@@ -370,10 +374,10 @@ bool Uno::playerHasCards(int pIDplayer)
 			playerHasCards++;
 		}
 	}
-	if (playerHasCards == 0) {
-		return false;
+	if (playerHasCards != 0) {
+		return true;
 	}
-	return true;
+	return false;
 }
 
 bool Uno::IsAnUndefinedCard(int pIDplayer, int pPositioninCardVec)

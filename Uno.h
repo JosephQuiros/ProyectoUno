@@ -16,7 +16,7 @@ private:
 public:
 	Uno();
 	~Uno();
-	void PlayUno();
+	void PlayUno1vs1();
 
 private:
 	void CreateDeck();

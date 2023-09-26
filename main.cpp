@@ -5,8 +5,7 @@
 int main() {
 
 	Uno UNO;
-	UNO.PlayUno();
-	//Prueba GitHub
+	UNO.PlayUno1vs1();
 
 	return 0;
 }
