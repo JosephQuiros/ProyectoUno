@@ -5,7 +5,7 @@
 int main() {
 
 	Uno UNO;
-	UNO.PlayUno1vs1();
+	UNO.playUNO();
 
 	return 0;
 }

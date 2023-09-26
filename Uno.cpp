@@ -1,11 +1,12 @@
 #include "Uno.h"
+
 Uno::Uno()
 {
 	this->totalCards = 108;
 	this->deck = new Card[totalCards];
 	this->discardedDeck = new Card[totalCards];
 	srand(time(NULL));
-	CreateDeck();
+	createDeck();
 }
 
 Uno::~Uno()
@@ -14,7 +15,7 @@ Uno::~Uno()
 	delete[] discardedDeck;
 }
 
-void Uno::CreateDeck()
+void Uno::createDeck()
 {
 	std::string ColorsOfCards[5] = { "Amarillo", "Azul", "Verde", "Rojo", "Negro"};
 	int currentPositioninVec = 0;
@@ -45,15 +46,15 @@ void Uno::CreateDeck()
 
 }
 
-void Uno::ShuffleDeck()
+void Uno::shuffleDeck()
 {
 	for (int currentPositioninVec = 0; currentPositioninVec < totalCards; currentPositioninVec++) {
-		int number = getRandomNum(currentPositioninVec, totalCards);
-		SwapCardPosition( &deck[currentPositioninVec], &deck[number]);
+		int number = getRandomNum(currentPositioninVec);
+		swapCardPosition( &deck[currentPositioninVec], &deck[number]);
 	}
 }
 
-void Uno::SwapCardPosition(Card* pCard1, Card* pCard2) {
+void Uno::swapCardPosition(Card* pCard1, Card* pCard2) {
 	Card x;
 
 	x = *pCard1;
@@ -61,44 +62,82 @@ void Uno::SwapCardPosition(Card* pCard1, Card* pCard2) {
 	*pCard2 = x;
 }
 
-int Uno::getRandomNum(int pFirstNumber, int pLastNumber)
+int Uno::getRandomNum(int pFirstNumber)
 {
-	int x = pFirstNumber + rand() % (totalCards - pFirstNumber);
+	int number = pFirstNumber + rand() % (totalCards - pFirstNumber);
 
-	return x;
+	return number;
 }
 
-void Uno::PrintDeck(int pIDplayer, Card CardinCenter)
+int Uno::getRandomNum(int pFirstNumber, int pLastNumber)
+{
+	int number = pFirstNumber + rand() % pLastNumber;
+
+	return number;
+}
+
+void Uno::playUNO()
+{
+	
+	int menu = 0;
+	int tries = 0;
+	do {
+		system("cls");
+		std::cout << "\n\t\tBienvenido a mi juego UNO.\n\n\nSelecione un modo para jugar:\n1) 1vs1\n2) 1vsCPU\n3) Salir\n\n";
+		std::cin >> menu;
+
+		switch (menu) {
+		case 1:
+			playUno1vs1();
+			menu = 3;
+			break;
+		case 2:
+			playUno1vsCPU();
+			menu = 3;
+			break;
+		case 3:
+			exit(1);
+			break;
+
+		default:
+			system("cls");
+			std::cout << "Opcion erronea. Por favor, intentelo de nuevo.\n";
+			system("pause");
+			system("cls");
+			break;
+		}
+	} while (menu != 3);
+	
+}
+
+void Uno::printDeck(int pIDplayer, Card CardinCenter)
 {
 	for (int i = 0; i < 50; i++)
 	{
 
 		if (player[pIDplayer][i].getColorCard() != "Undefined") {
 			std::cout << i + 1 << ": ";
-			player[pIDplayer][i].PrintValuesCard();
+			player[pIDplayer][i].printValuesCard();
 
 		}
 	}
 	std::cout << "\n\nSi desea comer una carta digite 0\n";
 	std::cout << "\nLa carta que hay en la mesa es: ";
-	CardinCenter.PrintValuesCard();
+	CardinCenter.printValuesCard();
 	std::cout << "Jugador " << pIDplayer + 1 << ". Cual carta desea lanzar?\n";
 	
 }
 
-void Uno::PlayUno1vs1()
+void Uno::playUno1vs1()
 {
-	int points[2] = {0};
 	int currentPositionInVecDiscarded = 0;
 	int turnOfPlayer = 0;
 	int selectedCard;
 	Card auxiliarCard;
 	
 
-	//while (stillFindingWinner(points)) 
-	//{
-		ShuffleDeck();
-		FillPlayersDecks();
+		shuffleDeck();
+		fillPlayersDecks();
 		putCardOnCenter(14, &auxiliarCard, currentPositionInVecDiscarded);
 		currentPositionInVecDiscarded++;
 
@@ -108,41 +147,85 @@ void Uno::PlayUno1vs1()
 					selectedCard = SelectPlayerCard(turnOfPlayer, auxiliarCard, currentPositionInVecDiscarded);
 					auxiliarCard = player[turnOfPlayer][selectedCard];
 					putCardOnCenter(turnOfPlayer, selectedCard , currentPositionInVecDiscarded);
-					if (IsSpecialCard(auxiliarCard)) {
-						DoSpecialAction(turnOfPlayer, &auxiliarCard, currentPositionInVecDiscarded);
+					if (isSpecialCard(auxiliarCard)) {
+						doSpecialAction(turnOfPlayer, &auxiliarCard, currentPositionInVecDiscarded);
 					}
 					currentPositionInVecDiscarded++;
 					turnOfPlayer++;
-
+					arrangeDeck(turnOfPlayer);
 				}
 
 				if (turnOfPlayer == 1) {
 					selectedCard = SelectPlayerCard(turnOfPlayer, auxiliarCard, currentPositionInVecDiscarded);
 					auxiliarCard = player[turnOfPlayer][selectedCard];
 					putCardOnCenter(turnOfPlayer, selectedCard, currentPositionInVecDiscarded);
-					if (IsSpecialCard(auxiliarCard)) {
-						DoSpecialAction(turnOfPlayer, &auxiliarCard, currentPositionInVecDiscarded);
+					if (isSpecialCard(auxiliarCard)) {
+						doSpecialAction(turnOfPlayer, &auxiliarCard, currentPositionInVecDiscarded);
 					}
 					currentPositionInVecDiscarded++;
 					turnOfPlayer--;
+					arrangeDeck(turnOfPlayer);
 				}
 
 
 		}
-	//}
 	system("cls");
 	std::cout << "Un jugador ha ganado";
 	system("pause");
 
 }
 
-void Uno::FillPlayersDecks()
+void Uno::playUno1vsCPU()
+{
+	int currentPositionInVecDiscarded = 0;
+	int turnOfPlayer = 0;
+	int selectedCard;
+	Card auxiliarCard;
+	shuffleDeck();
+	fillPlayersDecks();
+	putCardOnCenter(14, &auxiliarCard, currentPositionInVecDiscarded);
+	currentPositionInVecDiscarded++;
+	
+	while (playerHasCards(0) && playerHasCards(1))
+	{
+		if (turnOfPlayer == 0) {
+			selectedCard = SelectPlayerCard(turnOfPlayer, auxiliarCard, currentPositionInVecDiscarded);
+			auxiliarCard = player[turnOfPlayer][selectedCard];
+			putCardOnCenter(turnOfPlayer, selectedCard, currentPositionInVecDiscarded);
+			if (isSpecialCard(auxiliarCard)) {
+				doSpecialAction(turnOfPlayer, &auxiliarCard, currentPositionInVecDiscarded);
+			}
+			currentPositionInVecDiscarded++;
+			turnOfPlayer++;
+			arrangeDeck(turnOfPlayer);
+		}
+
+		if (turnOfPlayer == 1) {
+			selectedCard = selectCPUCard(auxiliarCard, currentPositionInVecDiscarded);
+			auxiliarCard = player[turnOfPlayer][selectedCard];
+			putCardOnCenter(turnOfPlayer, selectedCard, currentPositionInVecDiscarded);
+			if (isSpecialCard(auxiliarCard)) {
+				doSpecialActionCPU(turnOfPlayer, &auxiliarCard, currentPositionInVecDiscarded);
+			}
+			currentPositionInVecDiscarded++;
+			turnOfPlayer--;
+			arrangeDeck(turnOfPlayer);
+		}
+
+
+	}
+	system("cls");
+	std::cout << "Un jugador ha ganado\n\n";
+	system("pause");
+}
+
+void Uno::fillPlayersDecks()
 {
 	int currentPositioninVec = 0;
 
 	for (int loop = 0; loop < 14; loop += 2) {
-		SwapCardPosition(&deck[loop], &player[0][currentPositioninVec]);
-		SwapCardPosition(&deck[loop + 1],&player[1][currentPositioninVec]);
+		swapCardPosition(&deck[loop], &player[0][currentPositioninVec]);
+		swapCardPosition(&deck[loop + 1],&player[1][currentPositioninVec]);
 		currentPositioninVec++;
 	}
 }
@@ -151,13 +234,13 @@ void Uno::putCardOnCenter(int pPositioninCardVec,Card* pAuxiliarCard ,int pPosit
 {
 	*pAuxiliarCard = deck[pPositioninCardVec];
 
-	SwapCardPosition(&deck[pPositioninCardVec], &discardedDeck[pPositioninDiscardedVec]);
+	swapCardPosition(&deck[pPositioninCardVec], &discardedDeck[pPositioninDiscardedVec]);
 }
 
 void Uno::putCardOnCenter(int pIDplayer,int pPositionPlayerDeck, int pPositioninDiscardedVec)
 {
 
-	SwapCardPosition(&player[pIDplayer][pPositionPlayerDeck], &discardedDeck[pPositioninDiscardedVec]);
+	swapCardPosition(&player[pIDplayer][pPositionPlayerDeck], &discardedDeck[pPositioninDiscardedVec]);
 }
 
 int Uno::SelectPlayerCard(int pIDplayer, Card pCardinCenter, int &currentPositionInVecDiscarded)
@@ -174,7 +257,7 @@ int Uno::SelectPlayerCard(int pIDplayer, Card pCardinCenter, int &currentPositio
 			system("pause");
 			system("cls");
 		}
-		PrintDeck(pIDplayer, pCardinCenter);
+		printDeck(pIDplayer, pCardinCenter);
 		std::cin >> selectedCard;
 		selectedCard -= 1;
 		tries++;
@@ -183,7 +266,7 @@ int Uno::SelectPlayerCard(int pIDplayer, Card pCardinCenter, int &currentPositio
 			system("pause");
 			system("cls");
 
-			PrintDeck(pIDplayer, pCardinCenter);
+			printDeck(pIDplayer, pCardinCenter);
 			std::cin >> selectedCard;
 			selectedCard -= 1;
 		}
@@ -191,16 +274,40 @@ int Uno::SelectPlayerCard(int pIDplayer, Card pCardinCenter, int &currentPositio
 		while (selectedCard == -1) {
 			drawCard(pIDplayer, currentPositionInVecDiscarded);
 			system("cls");
-			PrintDeck(pIDplayer, pCardinCenter);
+			printDeck(pIDplayer, pCardinCenter);
 
 			std::cin >> selectedCard;
 			selectedCard -= 1;
 		}
 
 		
-	} while (IsAnUndefinedCard(pIDplayer, selectedCard) || IsUnableCard(pIDplayer,selectedCard, pCardinCenter));
+	} while (isAnUndefinedCard(pIDplayer, selectedCard) || !isUnableCard(pIDplayer,selectedCard, pCardinCenter));
 
 	return selectedCard;
+}
+
+int Uno::selectCPUCard(Card pCardinCenter, int& currentPositionInVecDiscarded)
+{
+	int positionLastCard = 0;
+	while(!isAnUndefinedCard(1, positionLastCard)){
+		positionLastCard++;
+	}
+
+	for (int loop = 0; loop < positionLastCard; loop++) {
+		if (isUnableCard(1, loop, pCardinCenter)) {
+			return loop;
+		}
+	}
+	do {
+		drawCard(1, currentPositionInVecDiscarded);
+
+		if (isUnableCard(1, positionLastCard, pCardinCenter)) {
+			return positionLastCard;
+		}
+
+		positionLastCard++;
+	} while (true);
+	
 }
 
 void Uno::drawCard(int pIDplayer, int &currentPositionInVecDiscarded)
@@ -210,20 +317,20 @@ void Uno::drawCard(int pIDplayer, int &currentPositionInVecDiscarded)
 
 	if (deckHasCards()) {
 
-		while (!IsAnUndefinedCard(pIDplayer,loop)) {
+		while (!isAnUndefinedCard(pIDplayer,loop)) {
 			loop++;
 		}
-		SwapCardPosition(&player[pIDplayer][loop],&deck[currentPositionInDeckVec]);
+		swapCardPosition(&player[pIDplayer][loop],&deck[currentPositionInDeckVec]);
 		currentPositionInDeckVec++;
 	}
 	else {
-		SwapCardPosition(&discardedDeck[0], &discardedDeck[currentPositionInDeckVec - 1]);
+		swapCardPosition(&discardedDeck[0], &discardedDeck[currentPositionInDeckVec - 1]);
 		shuffleDiscardedDeck(currentPositionInDeckVec - 1);
-		RefillDeck(currentPositionInDeckVec-1);
+		refillDeck(currentPositionInDeckVec-1);
 		currentPositionInDeckVec = 0;
 		currentPositionInVecDiscarded = 1;
 
-		SwapCardPosition(&player[pIDplayer][loop], &deck[currentPositionInDeckVec]);
+		swapCardPosition(&player[pIDplayer][loop], &deck[currentPositionInDeckVec]);
 		currentPositionInDeckVec++;
 	}
 }
@@ -232,16 +339,16 @@ void Uno::shuffleDiscardedDeck(int pLastCardInDiscardedDeck)
 {
 	for (int actualCard = 1; actualCard < pLastCardInDiscardedDeck; actualCard++) {
 		int number = getRandomNum(actualCard, pLastCardInDiscardedDeck);
-		SwapCardPosition(&discardedDeck[actualCard], &deck[number]);
+		swapCardPosition(&discardedDeck[actualCard], &deck[number]);
 	}
 }
 
-void Uno::RefillDeck(int pLastCardInDiscartedVec)
+void Uno::refillDeck(int pLastCardInDiscartedVec)
 {
 	
 
 	for (int loop = 1; loop <= pLastCardInDiscartedVec; loop++) {
-		SwapCardPosition(&discardedDeck[loop], &deck[loop - 1]);
+		swapCardPosition(&discardedDeck[loop], &deck[loop - 1]);
 	}
 }
 
@@ -260,14 +367,26 @@ bool Uno::deckHasCards()
 	return true;
 }
 
-void Uno::DoSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositionInVecDiscarded)
+void Uno::arrangeDeck(int pIDplayer)
 {
-	//pIDplayer 0
+	int positionOfIndefinedCard = 0;
+	while (!isAnUndefinedCard(pIDplayer, positionOfIndefinedCard)) {
+		positionOfIndefinedCard++;
+	}
+
+	for (; positionOfIndefinedCard < 49; positionOfIndefinedCard++) {
+		swapCardPosition(&player[pIDplayer][positionOfIndefinedCard], &player[pIDplayer][positionOfIndefinedCard+1]);
+	}
+
+}
+
+void Uno::doSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositionInVecDiscarded)
+{
 	if (IDplayer == 0) {
 		switch (pCardinCenter->getIndexCard()) {
 		case -1:
 			for (int loop = 0; loop < 2; loop++) {
-				drawCard(IDplayer + 1, currentPositionInVecDiscarded);
+				drawCard(1, currentPositionInVecDiscarded);
 			}
 			IDplayer--;
 			break;
@@ -283,7 +402,7 @@ void Uno::DoSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositi
 		case -4:
 			changeColorCard(pCardinCenter);
 			for (int loop = 0; loop < 4; loop++) {
-				drawCard(IDplayer + 1, currentPositionInVecDiscarded);
+				drawCard(1, currentPositionInVecDiscarded);
 			}
 			IDplayer--;
 			break;
@@ -293,12 +412,12 @@ void Uno::DoSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositi
 			break;
 		}
 	}
-	//pIDplayer 1
+
 	else if (IDplayer == 1){
 		switch (pCardinCenter->getIndexCard()) {
 		case -1:
 			for (int loop = 0; loop < 2; loop++) {
-				drawCard(IDplayer - 1, currentPositionInVecDiscarded);
+				drawCard(0, currentPositionInVecDiscarded);
 			}
 			IDplayer++;
 			break;
@@ -314,7 +433,7 @@ void Uno::DoSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositi
 		case -4:
 			changeColorCard(pCardinCenter);
 			for (int loop = 0; loop < 4; loop++) {
-				drawCard(IDplayer - 1, currentPositionInVecDiscarded);
+				drawCard(0, currentPositionInVecDiscarded);
 			}
 			IDplayer++;
 			break;
@@ -324,6 +443,38 @@ void Uno::DoSpecialAction(int& IDplayer, Card* pCardinCenter, int& currentPositi
 			break;
 
 		}
+	}
+}
+
+void Uno::doSpecialActionCPU(int &IDplayer, Card* pCardinCenter, int& currentPositionInVecDiscarded)
+{
+	switch (pCardinCenter->getIndexCard()) {
+	case -1:
+		for (int loop = 0; loop < 2; loop++) {
+			drawCard(0, currentPositionInVecDiscarded);
+		}
+		IDplayer++;
+		break;
+
+	case -2:
+		IDplayer++;
+		break;
+
+	case -3:
+		IDplayer++;
+		break;
+
+	case -4:
+		changeColorCardCPU(pCardinCenter);
+		for (int loop = 0; loop < 4; loop++) {
+			drawCard(0, currentPositionInVecDiscarded);
+		}
+		IDplayer++;
+		break;
+
+	case -5:
+		changeColorCardCPU(pCardinCenter);
+		break;
 	}
 }
 
@@ -356,6 +507,30 @@ void Uno::changeColorCard(Card* CardinCenter)
 	
 }
 
+void Uno::changeColorCardCPU(Card* CardinCenter)
+{
+	int color = getRandomNum(1, 4);
+	
+	switch (color)
+	{
+	case 1:
+		CardinCenter->setColorCard("Amarillo");
+		break;
+	case 2:
+		CardinCenter->setColorCard("Azul");
+		break;
+	case 3:
+		CardinCenter->setColorCard("Verde");
+		break;
+	case 4:
+		CardinCenter->setColorCard("Rojo");
+		break;
+
+	default:
+		break;
+	}
+}
+
 bool Uno::stillFindingWinner(int* pPoints)
 {
 	if (pPoints[0] < 500 || pPoints[1] < 500) {
@@ -380,30 +555,30 @@ bool Uno::playerHasCards(int pIDplayer)
 	return false;
 }
 
-bool Uno::IsAnUndefinedCard(int pIDplayer, int pPositioninCardVec)
+bool Uno::isAnUndefinedCard(int pIDplayer, int pPositioninCardVec)
 {
-	if (player[pIDplayer][pPositioninCardVec].getColorCard() != "Undefined") {
-		return false;
+	if (player[pIDplayer][pPositioninCardVec].getColorCard() == "Undefined") {
+		return true;
 	}
 	
-	return true;
+	return false;
 }
 
-bool Uno::IsUnableCard(int pIDplayer, int pPositioninCardVec, Card pCardinCenter)
+bool Uno::isUnableCard(int pIDplayer, int pPositioninCardVec, Card pCardinCenter)
 {
 	if (player[pIDplayer][pPositioninCardVec].getColorCard() == pCardinCenter.getColorCard()) {
-		return false;
+		return true;
 	}
 	if (player[pIDplayer][pPositioninCardVec].getIndexCard() == pCardinCenter.getIndexCard()) {
-		return false;
+		return true;
 	}
 	if (player[pIDplayer][pPositioninCardVec].getColorCard() == "Negro") {
-		return false;
+		return true;
 	}
-	return true;
+	return false;
 }
 
-bool Uno::IsSpecialCard(Card CardinCenter)
+bool Uno::isSpecialCard(Card CardinCenter)
 {
 	if (CardinCenter.getIndexCard() >= -5 && CardinCenter.getIndexCard() < 0 ) {
 		return true;

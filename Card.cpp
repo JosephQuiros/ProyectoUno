@@ -21,7 +21,7 @@ Card::~Card()
 {
 }
 
-void Card::PrintValuesCard()
+void Card::printValuesCard()
 {
 
 

@@ -15,7 +15,7 @@ public:
 
 	std::string getColorCard();
 	int getIndexCard();
-	void PrintValuesCard();
+	void printValuesCard();
 	void setColorCard(std::string pColor);
 };
 
